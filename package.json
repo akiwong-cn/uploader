@@ -1,0 +1,24 @@
+{
+  "name": "file-upload",
+  "version": "0.0.1",
+  "description": "a upload component",
+  "main": "index.js",
+  "scripts": {
+    "test": "./node_modules/karma/bin/karma start",
+    "build": "./node_modules/.bin/webpack"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "babel-cli": "^6.11.4",
+    "babel-loader": "^6.2.5",
+    "babel-preset-es2015": "^6.13.2",
+    "chai": "^3.5.0",
+    "formidable": "^1.0.17",
+    "karma": "^0.13.22",
+    "karma-chrome-launcher": "^1.0.1",
+    "karma-mocha": "^1.1.1",
+    "karma-webpack": "^1.8.0",
+    "mocha": "^2.5.3",
+    "webpack": "^1.13.2"
+  }
+}
