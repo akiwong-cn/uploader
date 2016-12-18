@@ -1,4 +1,7 @@
-export class File {
+/**
+ * 文件类
+ */
+export default class File {
   constructor(file, name) {
     this.id = File.guid++;
     this.source = file;
@@ -15,7 +18,7 @@ export class File {
     if (!slice) {
       return this.source;
     }
-    return slice.call(this.source, start, end);
+    return slice.call(this.source, start, end, this.type);
   }
 }
 

@@ -1,7 +1,8 @@
-import {Transport} from './transport.js'
-import {IframeTransport} from './iframeTransport.js'
+import Factory from './factory';
+import Uploader from './uploader';
+import ChunkUploader from './chunkUploader';
+import IframeTransport from './iframeTransport';
 
 export {
-  Transport,
-  IframeTransport
-} 
+  Factory
+};

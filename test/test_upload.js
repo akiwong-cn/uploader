@@ -1,5 +1,5 @@
 import {assert} from 'chai/chai'
-import {Uploader} from '../src/uploader'
+import Uploader from '../src/uploader'
 describe('uploader send file', function () {
     this.timeout(5000);
     it('uploader send one file', function (done) {

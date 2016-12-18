@@ -4,20 +4,21 @@
  */
 import { EventEmitter } from 'events'
 import { noop, merge, thenable } from './util'
-import { File } from './file'
-import { Transport } from './transport'
+import File from './file'
+import Transport from './transport'
 
-export class Uploader extends EventEmitter {
+export default class Uploader extends EventEmitter {
   constructor(option = {}) {
-    super()
+    super();
+    this.id = Uploader.guid++;
     this.option = merge({
-      upload: noop
+      beforeupload: noop
     }, option);
     /**
      * 上传队列 
      * @type {Array}
      */
-    this.queue = [];
+    this.files = [];
     this.status = Uploader.STATUS.UNSTART;
     this.tr = null;
     this._index = 0;
@@ -30,10 +31,11 @@ export class Uploader extends EventEmitter {
   }
 
   current() {
-    return this.queue[this._index];
+    return this.files[this._index];
   }
 
   start() {
+    this.emit('start', this);
     this.status = Uploader.STATUS.START;
     this.send();
   }
@@ -50,7 +52,7 @@ export class Uploader extends EventEmitter {
     this.send();
   }
   send() {
-    let result = this.option.upload();
+    let result = this.option.beforeupload();
     if (thenable(result)) {
       result.then(() => {
         this._send();
@@ -68,7 +70,7 @@ export class Uploader extends EventEmitter {
     if (this.status === Uploader.STATUS.PAUSE) {
       return this;
     }
-    let file = this.queue[this._index];
+    let file = this.files[this._index];
     this.tr = this.getTransport();
 
     file.status = File.STATUS.UPLOADING;
@@ -83,15 +85,20 @@ export class Uploader extends EventEmitter {
       file.uploadBytes = file.size;
       this.emit('done', file);
       this._index++;
-      if (this._index >= this.queue.length) {
+      if (this._index >= this.files.length) {
         this.status = Uploader.STATUS.COMPLETE;
-        this.emit('complete', this);
+        this.emit('complete', this, this.tr.getJson());
         return;
       }
       this.send();
     };
     this.tr.on('complete', success);
     this.tr.on('error', fail);
+    this.tr.on('progress', (e) => {
+      if (e.lengthComputable) {
+        this.emit('progress', e);
+      }
+    });
 
     this.tr.send({
       formData: this.option.formData,
@@ -112,8 +119,8 @@ export class Uploader extends EventEmitter {
   }
 
   addFile(file, name) {
-    this.queue.push(new File(file, name));
-    this.emit('add', this.queue[this.queue.length - 1]);
+    this.files.push(new File(file, name));
+    this.emit('add', this.files[this.files.length - 1]);
   }
 
   getTransport() {
@@ -131,3 +138,5 @@ Uploader.STATUS = {
   PAUSE: 3, // 上传暂停
   COMPLETE: 4 // 上传结束
 };
+
+Uploader.guid = 1;

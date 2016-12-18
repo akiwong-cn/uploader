@@ -1,10 +1,10 @@
 /**
  * 默认xmlhttprequest请求
  */
-import {EventEmitter} from 'events'
-import {noop} from './util'
+import { EventEmitter } from 'events'
+import { noop } from './util'
 
-export class Transport extends EventEmitter {
+export default class Transport extends EventEmitter {
   constructor () {
     super();
     this.xhr = new XMLHttpRequest();
@@ -45,7 +45,7 @@ export class Transport extends EventEmitter {
     this._data = data;
     // 默认为post请求async必须为true
     this.xhr.open(data.method || 'POST', data.url || '', true);
-    this.xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    // this.xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
     if (data.headers) {
       for (let header in data.headers) {
         this.xhr.setRequestHeader(header, data.headers[header]);

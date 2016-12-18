@@ -1,23 +1,26 @@
 /**
  * @file chunk uploader 分块上传类
  */
-import {Uploader} from './uploader'
-import {noop, merge, thenable} from './util'
-import {File} from './file'
-import {Transport} from './transport'
-
-export class ChunkUploader extends Uploader {
+import Uploader from './uploader'
+import { noop, merge, thenable } from './util'
+import File from './file'
+import Transport from './transport'
+/**
+ * 分块上传类
+ */
+export default class ChunkUploader extends Uploader {
   constructor(option) {
     // 默认的chunksize 为 10m
     super(merge({
       chunkSize: 10 * 1024 * 1024
     }, option));
+    this.chunked = true;
   }
   _send() {
     if (this.status === Uploader.STATUS.PAUSE) {
       return this;
     }
-    let file = this.queue[this._index];
+    let file = this.files[this._index];
     this.tr = this.getTransport();
     file.status = File.STATUS.UPLOADING;
 
@@ -40,20 +43,30 @@ export class ChunkUploader extends Uploader {
       }
       file.status = File.STATUS.UPLOADED;
       this.emit('chunkdone', this);
-      this.emit('done', file);
+      this.emit('done', this);
       this._index++;
-      if (this._index >= this.queue.length) {
+      if (this._index >= this.files.length) {
         this.status = Uploader.STATUS.COMPLETE;
-        this.emit('complete', this);
+        this.emit('complete', this, this.tr.getJson());
         return;
       }
       this.send();
     }
 
-    // option.upload 是对chunk 上传的回调
     this.tr.on('complete', success);
 
     this.tr.on('error', fail);
+
+    this.tr.on('progress', (e) => {
+      if (e.lengthComputable) {
+        this.emit('progress', {
+          lengthComputable: e.lengthComputable,
+          loaded: e.loaded + file.uploadedBytes,
+          total: file.size
+        });
+      }
+    });
+
     // only support xhr2 uploader
     this.tr.send({
       headers: {

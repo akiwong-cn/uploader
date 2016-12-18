@@ -1,10 +1,13 @@
 /**
  * iframe请求
  */
-import {EventEmitter} from 'events'
-import {noop, merge} from './util'
+import { EventEmitter } from 'events'
+import { noop, merge } from './util'
 
-export class IframeTransport extends EventEmitter {
+/**
+ * iframe 发送表单
+ */
+export default class IframeTransport extends EventEmitter {
   constructor () {
     super();
     this._ifr = document.createElement('iframe');
