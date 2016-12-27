@@ -13,8 +13,8 @@ export default class Transport extends EventEmitter {
 
   _ajax (form) {
    var xhr = this.xhr;
-    xhr.upload.onprocess = e => {
-      this.emit('process', e);
+    xhr.upload.onprogress = e => {
+      this.emit('progress', e);
     };
     xhr.onreadystatechange = e => {
       if (xhr.readyState !== 4 ) {

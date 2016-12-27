@@ -3,16 +3,18 @@
  * @file: 上传类
  */
 import { EventEmitter } from 'events'
-import { noop, merge, thenable } from './util'
+import { merge, thenable } from './util'
 import File from './file'
 import Transport from './transport'
-
+function before(cb) {
+  cb();
+}
 export default class Uploader extends EventEmitter {
   constructor(option = {}) {
     super();
     this.id = Uploader.guid++;
     this.option = merge({
-      beforeupload: noop
+      beforeupload: before
     }, option);
     /**
      * 上传队列 
@@ -52,15 +54,21 @@ export default class Uploader extends EventEmitter {
     this.send();
   }
   send() {
-    let result = this.option.beforeupload();
-    if (thenable(result)) {
-      result.then(() => {
-        this._send();
-      }, () => {
-        this.emit('error', this);
-      });
-    } else {
+    let fail = (e) => {
+      this.emit('error', this, e);
+    };
+    let succ = () => {
       this._send();
+    };
+    let beforeFunc = (error, data) => {
+      if (error) {
+        return fail(error);
+      }
+      succ();
+    }
+    let result = this.option.beforeupload(beforeFunc);
+    if (thenable(result)) {
+      result.then(succ, fail);
     }
   }
   /**
@@ -115,6 +123,7 @@ export default class Uploader extends EventEmitter {
     if (this.tr) {
       this.tr.abort();
       this.emit('abort', this);
+      this.status = Uploader.STATUS.PAUSE;
     }
   }
 
@@ -125,7 +134,7 @@ export default class Uploader extends EventEmitter {
 
   getTransport() {
     if (this.option.transport) {
-      return transport(this.option);
+      return this.option.transport(this.option);
     }
     return new Transport(this.option);
   }
@@ -136,7 +145,8 @@ Uploader.STATUS = {
   START: 1, // 开始状态还未上传
   UPLOADING: 2, // 上传中
   PAUSE: 3, // 上传暂停
-  COMPLETE: 4 // 上传结束
+  COMPLETE: 4, // 上传结束
+  ABORT: 5  // 放弃上传
 };
 
 Uploader.guid = 1;

@@ -24,7 +24,7 @@ export default class ChunkUploader extends Uploader {
     this.tr = this.getTransport();
     file.status = File.STATUS.UPLOADING;
 
-    let chunkSize = this.option.chunkSize;
+    let chunkSize = this.option.chunkSize || file.size;
     let end = file.uploadedBytes + chunkSize;
     if (end > file.size) {
       chunkSize = file.size - file.uploadedBytes;

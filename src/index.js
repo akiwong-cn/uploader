@@ -1,8 +1,11 @@
-import Factory from './factory';
-import Uploader from './uploader';
-import ChunkUploader from './chunkUploader';
-import IframeTransport from './iframeTransport';
+import Factory from './factory'
+import Uploader from './uploader'
+import ChunkUploader from './chunkUploader'
+import support from './support'
 
 export {
-  Factory
+  Factory,
+  ChunkUploader,
+  Uploader,
+  support
 };

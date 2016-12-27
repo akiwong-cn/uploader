@@ -18,7 +18,7 @@ export default class IframeTransport extends EventEmitter {
       height: 0
     });
     this._ifr.src = 'javascript:false;';
-    this._ifr.name = `IframeTransport-${IframeTransport.guid++}`,
+    this._ifr.name = `IframeTransport-${IframeTransport.guid++}`;
     this._form = null;
     this._response = null;
     document.body.appendChild(this._ifr);
