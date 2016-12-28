@@ -1,45 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<title>iframe transport</title>
-	<script src="http://cdn.bootcss.com/es5-shim/4.5.9/es5-shim.js"></script>
-	<script src="http://cdn.bootcss.com/es5-shim/4.5.9/es5-sham.js"></script>
-	<script src="http://cdn.bootcss.com/jquery/1.12.0/jquery.js"></script>
-	<script src="../helper.js"></script>
-	<script src="../release/file-upload.js"></script>
+  <meta charset="UTF-8">
+  <title>iframe transport</title>
+  <script src="http://cdn.bootcss.com/es5-shim/4.5.9/es5-shim.js"></script>
+  <script src="http://cdn.bootcss.com/es5-shim/4.5.9/es5-sham.js"></script>
+  <script src="http://cdn.bootcss.com/jquery/1.12.0/jquery.js"></script>
+  <script src="../release/file-upload.pack.js"></script>
 </head>
 <body>
-	<~
-	<input type="file">
-	<script type="text/javascript">
-		$('input').on('change', function (e) {
-            var file;
-            if (!e.target.files) {
-                file = {name: e.target.value};
-            } else {
-			    file = e.target.files[0];
-            }
-			var a = new FileUploader.IframeTransport();
-			a.send({
-				url: '/fileupload',
-				formData: [{
-					name: 'test',
-					value: '1'
-				}, {
-					name: 'test2',
-					value: '2'
-				}],
-				fileInput: this,
-				field: 'file'
-			});
-			a.on('complete', function () {
-				console.log(a.getText());
-			})
-			a.on('error', function () {
-				alert('error');
-			})
-		});
-	</script>
+  <input type="file">
+  <script type="text/javascript">
+    var factory = new FileUploader.Factory();
+    $('input').on('change', function (e) {
+      var file;
+      if (!e.target.files) {
+          file = {name: e.target.value};
+      } else {
+        file = e.target.files[0];
+      }
+      var up = factory.getUploader({forceIframe: true});
+      up.addFile(file);
+      up.setOption({
+        url: 'http://127.0.0.1:3000/upload',
+        formData: [{
+          name: 'redirect_url',
+          value: 'http://127.0.0.1:9000/demo/iframe_result.html?%s'
+        }],
+        fileInput: this,
+        field: 'file'
+      });
+      up.send();
+      up.on('complete', function (uploader, res) {
+        console.log(res);
+      })
+      up.on('error', function () {
+        alert('error');
+      })
+    });
+  </script>
 </body>
 </html>

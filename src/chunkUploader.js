@@ -2,7 +2,7 @@
  * @file chunk uploader 分块上传类
  */
 import Uploader from './uploader'
-import { noop, merge, thenable } from './util'
+import { noop, merge, thenable } from './utils'
 import File from './file'
 import Transport from './transport'
 /**

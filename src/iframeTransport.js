@@ -1,8 +1,31 @@
 /**
  * iframe请求
  */
-import { EventEmitter } from 'events'
-import { noop, merge } from './util'
+import EventEmitter from 'events'
+import { noop, merge } from './utils'
+
+// ie7以下由于设置不了所以使用这种方式创建iframe
+function createIframe(name) {
+  var div = document.createElement('div');
+  div.innerHTML = `<iframe name="${name}" src="javascript:false"></iframe>`;
+  return div.children[0];
+}
+
+function on(iframe, type, fn) {
+  if (iframe.attachEvent) {
+    iframe.attachEvent(type, fn);
+  } else {
+    iframe[type] = fn;
+  }
+}
+
+function off(iframe, type, fn) {
+  if (iframe.attachEvent) {
+    iframe.detachEvent(type, fn);
+  } else {
+    iframe[type] = null;
+  }
+}
 
 /**
  * iframe 发送表单
@@ -10,19 +33,25 @@ import { noop, merge } from './util'
 export default class IframeTransport extends EventEmitter {
   constructor () {
     super();
-    this._ifr = document.createElement('iframe');
+    this._ifr = createIframe(`IframeTransport-${IframeTransport.guid++}`);
     merge(this._ifr.style, {
       position: 'absolute',
       display: 'none',
       width: 0,
       height: 0
     });
-    this._ifr.src = 'javascript:false;';
-    this._ifr.name = `IframeTransport-${IframeTransport.guid++}`;
+    
     this._form = null;
     this._response = null;
-    document.body.appendChild(this._ifr);
     this._data = null;
+  }
+  send(data) {
+    var onsend = () => {
+      off(this._ifr, 'onload', onsend);
+      this._send(data);
+    }
+    on(this._ifr, 'onload', onsend);
+    document.body.appendChild(this._ifr);
   }
   /**
    * @param: {object} data 发送选项
@@ -30,9 +59,11 @@ export default class IframeTransport extends EventEmitter {
    *       只支持基本类型 
    *     fileInput {HTMLElement} input标签
    */
-  send (data) {
+  _send (data) {
     this._data = data;
     var form = this._form = document.createElement('form');
+    form.style.display = 'none';
+
     var forms = [];
     if (data.formData) {
       if (typeof data.formData === 'function') {
@@ -50,11 +81,14 @@ export default class IframeTransport extends EventEmitter {
       });
       form.appendChild(input);
     });
+
     var inputClone = data.fileInput.cloneNode(true);
     data.fileInput.parentNode.insertBefore(inputClone, data.fileInput);
     inputClone.removeAttribute('form');
     form.appendChild(data.fileInput);
-    this._ifr.appendChild(form);
+    form.appendChild(this._ifr);
+    document.body.appendChild(form);
+
     data.fileInput.name = data.field;
     merge(form, {
       action: data.url,
@@ -63,38 +97,38 @@ export default class IframeTransport extends EventEmitter {
       enctype: 'multipart/form-data',
       encoding: 'multipart/form-data'
     });
+    data.fileInput.removeAttribute('form');
 
     var onerror = () => {
       this.emit('error', e);
+      document.body.removeChild(this._ifr);
     };
 
     var onload = () => {
       try {
-        this._response = this._ifr.contentDocument.body;
+        var doc = this._ifr.contentDocument;
+        if (!doc) {
+          // for ie
+          doc = this._ifr.contentWindow.document;
+        }
+        var response = doc.body;
+        // 不支持textContent的(ie6-8)使用innerText
+        this._response = response.innerText || response.textContent;
       } catch (e) {
       }
+      document.body.removeChild(form);
       this.emit('complete', this);
-
-      if (this._ifr.detachEvent) {
-        this._ifr.detachEvent('onload', onload);
-        this._ifr.detachEvent('onerror', onerror);
-      } else {
-        this._ifr.onload = null;
-        this._ifr.onerror = null;
-      }
     };
 
-    
-    if (this._ifr.attachEvent) {
-      this._ifr.attachEvent('onload', onload);
-      this._ifr.attachEvent('onerror', onerror);
-    } else {
-      this._ifr.onload = onload;
-      this._ifr.onerror = onerror;
-    }
+    on(this._ifr, 'onload', onload);
+    on(this._ifr, 'onerror', onerror);
+
     form.submit();
     data.fileInput.name = inputClone.name;
-    data.fileInput.setAttribute('form', inputClone.getAttribute('form'));
+    let formAttr = inputClone.getAttribute('form');
+    if (formAttr) {
+      data.fileInput.setAttribute('form', formAttr);
+    }
     inputClone.parentNode.replaceChild(data.fileInput, inputClone);
   }
 
@@ -107,11 +141,13 @@ export default class IframeTransport extends EventEmitter {
     return this._response;
   }
   getText () {
-    // 不支持textContent的(ie6-8)使用innerText
-    return this._response ? this._response.textContent || this._response.innerText : '';
+    return this._response || '';
   }
   getJson () {
-    return JSON.parse(this.getText());
+    try {
+      return JSON.parse(this.getText());
+    } catch (e) {}
+    return null;
   }
 }
 

@@ -1,10 +1,13 @@
 import {assert} from 'chai/chai'
 import Uploader from '../src/uploader'
+import getFile from './getFile'
+import domain from './domain'
+
 describe('uploader send file', function () {
     this.timeout(5000);
     it('uploader send one file', function (done) {
-        var uploader = new Uploader({url: 'http://localhost:3000/upload'});
-        uploader.addFile(new File([123], '1.txt', {type: 'text/plain'}));
+        var uploader = new Uploader({url: domain});
+        uploader.addFile(getFile([123], 'text/plain'));
         assert.equal(uploader.status, Uploader.STATUS.UNSTART);
         uploader.on('complete', (uploader) => {
             const r = uploader.tr.getJson();
@@ -19,9 +22,9 @@ describe('uploader send file', function () {
     });
 
     it('uploader send multi file', function (done) {
-        var uploader = new Uploader({url: 'http://localhost:3000/upload'});
-        uploader.addFile(new File([123], '1.txt', {type: 'text/plain'}));
-        uploader.addFile(new File([234], '2.txt', {type: 'text/plain'}));
+        var uploader = new Uploader({url: domain});
+        uploader.addFile(getFile([123], 'text/plain'));
+        uploader.addFile(getFile([234], 'text/plain'));
         assert.equal(uploader.status, Uploader.STATUS.UNSTART);
         var count = 0;
         uploader.on('done', () => {

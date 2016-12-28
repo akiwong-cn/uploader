@@ -1,0 +1,29 @@
+<!DOCTYPE HTML>
+<!--
+/*
+ * jQuery Iframe Transport Plugin Redirect Page 2.0.1
+ * https://github.com/blueimp/jQuery-File-Upload
+ *
+ * Copyright 2010, Sebastian Tschan
+ * https://blueimp.net
+ *
+ * Licensed under the MIT license:
+ * http://www.opensource.org/licenses/MIT
+ */
+-->
+<!--
+适用场景：跨域文件上传
+对于不支持XMLHttpRequest2 file api上传的低版本浏览器，退化为使用iframe进行文件上传，
+通过远程服务端把响应重定向到同域名下iframe页面，从而允许对iframe内容的正常读取
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>jQuery Iframe Transport Plugin Redirect Page - 头条号</title>
+</head>
+<body>
+<script>
+document.body.innerText=document.body.textContent=decodeURIComponent(window.location.search.slice(1));
+</script>
+</body>
+</html>

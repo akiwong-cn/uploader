@@ -2,8 +2,8 @@
  * uploader 上传类, 上传队列目前实现顺序上传
  * @file: 上传类
  */
-import { EventEmitter } from 'events'
-import { merge, thenable } from './util'
+import EventEmitter from 'events'
+import { merge, thenable } from './utils'
 import File from './file'
 import Transport from './transport'
 function before(cb) {
@@ -12,6 +12,7 @@ function before(cb) {
 export default class Uploader extends EventEmitter {
   constructor(option = {}) {
     super();
+    this._iframe = false;
     this.id = Uploader.guid++;
     this.option = merge({
       beforeupload: before
@@ -115,7 +116,7 @@ export default class Uploader extends EventEmitter {
       field: this.option.filefield || 'file[]',
       name: file.name,
       file: file.source,
-      fileInput: this.option.input
+      fileInput: this.option.fileInput
     });
   }
 

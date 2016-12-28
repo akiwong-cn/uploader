@@ -1,6 +1,6 @@
 // Karma configuration
 // Generated on Sun Jun 12 2016 13:42:02 GMT+0800 (CST)
-
+var webpackConf = require('./webpack.config.js');
 module.exports = function(config) {
   config.set({
 
@@ -21,7 +21,7 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'test/*.js'
+      'test/test_*.js'
     ],
 
 
@@ -37,13 +37,7 @@ module.exports = function(config) {
     },
 
     webpack: {
-      module: {
-        loaders: [{
-           test: /\.js$/,
-           exclude: /node_modules/,
-           loader: 'babel-loader',
-        }]
-      }
+      module: webpackConf.module
     },
 
 
@@ -55,6 +49,7 @@ module.exports = function(config) {
 
     // web server port
     port: 9876,
+    host: '0.0.0.0',
 
 
     // enable / disable colors in the output (reporters and logs)

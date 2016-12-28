@@ -1,5 +1,8 @@
 import {assert} from 'chai/chai'
 import { Factory } from '../src/'
+import getFile from './getFile'
+import domain from './domain'
+
 var array = new Array(1024 * 1024 * 2);
 for (var i = 0; i < array.length; i++) {
     array[i] = 1;
@@ -10,8 +13,8 @@ describe('chunk uploader send file', function () {
     var splice = 5;
 	this.timeout(50000);
     it('chunk send one file', function (done) {
-        var uploader = factory.getUploader({url: 'http://localhost:3000/upload', chunk: true, chunkSize});
-        uploader.addFile(new File(array, '1.txt', {type: 'text/plain'}));
+        var uploader = factory.getUploader({url: domain, chunk: true, chunkSize});
+        uploader.addFile(getFile(array, 'text/plain'));
         let count = 0;
         let error = null;
         uploader.on('complete', () => {
@@ -32,9 +35,9 @@ describe('chunk uploader send file', function () {
     });
 
     it('chunk send multi files', function (done) {
-        var uploader = factory.getUploader({url: 'http://localhost:3000/upload'});
-        uploader.addFile(new File(array, '1.txt', {type: 'text/plain'}));
-        uploader.addFile(new File(array, '2.txt', {type: 'text/plain'}));
+        var uploader = factory.getUploader({url: domain});
+        uploader.addFile(getFile(array, 'text/plain'));
+        uploader.addFile(getFile(array, 'text/plain'));
         uploader.on('complete', () => done());
         uploader.on('error', () => done('transport error'));
         uploader.start();

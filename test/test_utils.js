@@ -1,5 +1,5 @@
 import {assert} from 'chai/chai'
-import {merge} from '../src/util'
+import {merge} from '../src/utils'
 
 describe('test merge function', () => {
     it('merge two object', () => {

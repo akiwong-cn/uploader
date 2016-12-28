@@ -15,14 +15,22 @@ http.createServer(function(req, res) {
 	form.uploadDir = path.join(__dirname, 'tmp');
     form.multiples = true;
     form.parse(req, function(err, fields, files) {
-      res.writeHead(200, {'Content-Type': 'text/json'});
+      files = files['file[]'] || {};
+      var result = JSON.stringify({fields: fields, files: files}, null, '  ');
+      if (fields.redirect_url) {
+        res.writeHead(302, {
+          Location: fields.redirect_url.replace('%s', encodeURIComponent(result))
+        });
+        res.end();
+      } else {
+        res.writeHead(200, {'Content-Type': 'text/json'});
         res.writeHead(200, {
           'Access-Control-Allow-Origin': req.headers['origin'],
           'Access-Control-Allow-Method': 'POST',
           'Access-Control-Allow-Headers': 'range',
         });
-        files = files['file[]'] || {};
-      res.end(JSON.stringify({fields: fields, files: files}, null, '  '));
+        res.end(result);
+      }
     });
     return;
   }

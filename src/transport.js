@@ -1,8 +1,8 @@
 /**
  * 默认xmlhttprequest请求
  */
-import { EventEmitter } from 'events'
-import { noop } from './util'
+import EventEmitter from 'events'
+import { noop } from './utils'
 
 export default class Transport extends EventEmitter {
   constructor () {

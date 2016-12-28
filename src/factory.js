@@ -1,7 +1,7 @@
 /**
  * @file uploader工厂
  */
-import { merge } from './util'
+import { merge } from './utils'
 import ChunkUploader from './chunkUploader'
 import Uploader from './uploader'
 import IframeTransport from './iframeTransport'
@@ -18,12 +18,14 @@ class Factory {
     var uploaderOption = merge({}, Factory.defaultOption, option);
     var uploader = null;
     // 同时发送多个文件 不能使用chunkuploader
-    if (option.chunk && support.chunk) {
+    if (option.chunk && support.chunk && !option.forceIframe) {
       uploader = new ChunkUploader(uploaderOption);
-    } else if (support.xhr) {
+    } else if (support.xhr && !option.forceIframe) {
       uploader = new Uploader(uploaderOption);
     } else {
-      uploader = uploaderOption.transport = getIframeTransport;
+      uploaderOption.transport = getIframeTransport;
+      uploader = new Uploader(uploaderOption);
+      uploader._iframe = true;
     }
     return uploader;
   }
