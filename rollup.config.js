@@ -18,6 +18,6 @@ export default {
   ],
   moduleName: 'FileUploader',
   targets: [
-    { dest: 'release/file-upload.js', format: 'umd' }
+    { dest: 'dist/file-upload.js', format: 'umd' }
   ]
 };
