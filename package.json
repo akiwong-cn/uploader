@@ -1,5 +1,5 @@
 {
-  "name": "file-upload",
+  "name": "byted-pgc-upload",
   "version": "0.0.1",
   "description": "a upload component",
   "main": "dist/file-upload.js",
@@ -11,6 +11,9 @@
     "dist",
     "src"
   ],
+  "publishConfig": {
+    "registry": "http://npm.byted.org/"
+  },
   "repository": {
     "type": "git",
     "url": "https://code.byted.org/wangqiushi/image-process"
