@@ -110,6 +110,7 @@ export default class Uploader extends EventEmitter {
     });
 
     this.tr.send({
+      headers: this.option.headers,
       formData: this.option.formData,
       url: this.option.url,
       binary: this.option.binary,

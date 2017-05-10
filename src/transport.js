@@ -9,10 +9,19 @@ export default class Transport extends EventEmitter {
     super();
     this.xhr = new XMLHttpRequest();
     this._data = null;
+    this._reqHeaders = null;
   }
 
   _ajax (form) {
-   var xhr = this.xhr;
+    let headers = this._reqHeaders;
+    if (headers) {
+      for (let header in headers) {
+        if (headers[header] !== undefined) {
+          this.xhr.setRequestHeader(header, headers[header]);
+        }
+      }
+    }
+    var xhr = this.xhr;
     xhr.upload.onprogress = e => {
       this.emit('progress', e);
     };
@@ -32,6 +41,19 @@ export default class Transport extends EventEmitter {
     };
     xhr.send(form);
   }
+
+  /**
+   * first set has higher priority
+   *
+   * @param {object} headers
+   */
+  _mergeHeader(headers) {
+    for (let header in headers) {
+      if (!this._reqHeaders[header]) {
+        this._reqHeaders[header] = headers[header];
+      }
+    }
+  }
   /**
    * @param: {object} data 发送选项
    *     headers {object} 请求头
@@ -43,14 +65,10 @@ export default class Transport extends EventEmitter {
    */
   send (data) {
     this._data = data;
+    this._reqHeaders = data.headers || {};
     // 默认为post请求async必须为true
     this.xhr.open(data.method || 'POST', data.url || '', true);
-    // this.xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-    if (data.headers) {
-      for (let header in data.headers) {
-        this.xhr.setRequestHeader(header, data.headers[header]);
-      }
-    }
+    this._mergeHeader({ 'X-Requested-With': 'XMLHttpRequest' });
     if (data.binary) {
       return this.sendAsBinary(data);
     } else {
@@ -64,9 +82,10 @@ export default class Transport extends EventEmitter {
    */
   sendAsBinary (data) {
     // 接收头为octet－stream
-    this.xhr.setRequestHeader('Content-Type', 'application/octet-stream');
-    this.xhr.setRequestHeader('Content-Disposition', 'attachment; filename="' +
-          encodeURI(data.filename) + '"');
+    this._mergeHeader({
+      'Content-Type': 'application/octet-stream',
+      'Content-Disposition': 'attachment; filename="' + encodeURI(data.filename) + '"'
+    });
     return this._ajax(data.file);
   }
   /**

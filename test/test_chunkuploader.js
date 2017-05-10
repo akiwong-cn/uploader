@@ -35,7 +35,7 @@ describe('chunk uploader send file', function () {
     });
 
     it('chunk send multi files', function (done) {
-        var uploader = factory.getUploader({url: domain});
+        var uploader = factory.getUploader({url: domain, headers: {a: 'b'}});
         uploader.addFile(getFile(array, 'text/plain'));
         uploader.addFile(getFile(array, 'text/plain'));
         uploader.on('complete', () => done());

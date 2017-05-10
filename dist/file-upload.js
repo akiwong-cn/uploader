@@ -395,12 +395,21 @@ var Transport = function (_EventEmitter) {
 
     _this.xhr = new XMLHttpRequest();
     _this._data = null;
+    _this._reqHeaders = null;
     return _this;
   }
 
   Transport.prototype._ajax = function _ajax(form) {
     var _this2 = this;
 
+    var headers = this._reqHeaders;
+    if (headers) {
+      for (var header in headers) {
+        if (headers[header] !== undefined) {
+          this.xhr.setRequestHeader(header, headers[header]);
+        }
+      }
+    }
     var xhr = this.xhr;
     xhr.upload.onprogress = function (e) {
       _this2.emit('progress', e);
@@ -421,6 +430,21 @@ var Transport = function (_EventEmitter) {
     };
     xhr.send(form);
   };
+
+  /**
+   * first set has higher priority
+   *
+   * @param {object} headers
+   */
+
+
+  Transport.prototype._mergeHeader = function _mergeHeader(headers) {
+    for (var header in headers) {
+      if (!this._reqHeaders[header]) {
+        this._reqHeaders[header] = headers[header];
+      }
+    }
+  };
   /**
    * @param: {object} data 发送选项
    *     headers {object} 请求头
@@ -434,14 +458,10 @@ var Transport = function (_EventEmitter) {
 
   Transport.prototype.send = function send(data) {
     this._data = data;
+    this._reqHeaders = data.headers || {};
     // 默认为post请求async必须为true
     this.xhr.open(data.method || 'POST', data.url || '', true);
-    // this.xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-    if (data.headers) {
-      for (var header in data.headers) {
-        this.xhr.setRequestHeader(header, data.headers[header]);
-      }
-    }
+    this._mergeHeader({ 'X-Requested-With': 'XMLHttpRequest' });
     if (data.binary) {
       return this.sendAsBinary(data);
     } else {
@@ -457,8 +477,10 @@ var Transport = function (_EventEmitter) {
 
   Transport.prototype.sendAsBinary = function sendAsBinary(data) {
     // 接收头为octet－stream
-    this.xhr.setRequestHeader('Content-Type', 'application/octet-stream');
-    this.xhr.setRequestHeader('Content-Disposition', 'attachment; filename="' + encodeURI(data.filename) + '"');
+    this._mergeHeader({
+      'Content-Type': 'application/octet-stream',
+      'Content-Disposition': 'attachment; filename="' + encodeURI(data.filename) + '"'
+    });
     return this._ajax(data.file);
   };
   /**
@@ -634,6 +656,7 @@ var Uploader = function (_EventEmitter) {
     });
 
     this.tr.send({
+      headers: this.option.headers,
       formData: this.option.formData,
       url: this.option.url,
       binary: this.option.binary,
@@ -756,9 +779,9 @@ var ChunkUploader = function (_Uploader) {
 
     // only support xhr2 uploader
     this.tr.send({
-      headers: {
+      headers: merge({
         'Content-Range': 'bytes ' + file.uploadedBytes + '-' + (end - 1) + '/' + file.size
-      },
+      }, this.option.headers),
       formData: this.option.formData,
       url: this.option.url,
       binary: this.option.binary,

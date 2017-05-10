@@ -11,10 +11,6 @@
     "dist",
     "src"
   ],
-  "repository": {
-    "type": "git",
-    "url": "https://code.byted.org/wangqiushi/image-process"
-  },
   "license": "MIT",
   "devDependencies": {
     "babel-loader": "^6.2.9",
