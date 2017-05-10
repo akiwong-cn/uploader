@@ -69,9 +69,9 @@ export default class ChunkUploader extends Uploader {
 
     // only support xhr2 uploader
     this.tr.send({
-      headers: {
+      headers: merge({
         'Content-Range': `bytes ${file.uploadedBytes}-${end - 1}/${file.size}` 
-      },
+      }, this.option.headers),
       formData: this.option.formData,
       url: this.option.url,
       binary: this.option.binary,

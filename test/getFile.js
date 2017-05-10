@@ -6,7 +6,7 @@ export default function (content, type) {
     b.append(content);
     return b.getBlob(type);
   } else {
-    return new File(content, { type });
+    return new File(content, 'test', { type });
   }
 
 }

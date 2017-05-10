@@ -10,6 +10,14 @@ var path = require('path');
 
 http.createServer(function(req, res) {
   if (req.url == '/upload' && req.method.toLowerCase() == 'post') {
+      var bufs = [];
+      req.on('data', (buf) => {
+          bufs.push(buf);
+      });
+      req.on('end', (e) => {
+          console.log(Buffer.concat(bufs));
+          console.log('------toString:', Buffer.concat(bufs).toString());
+      });
     // parse a file upload
     var form = new formidable.IncomingForm();
 	form.uploadDir = path.join(__dirname, 'tmp');
@@ -35,14 +43,16 @@ http.createServer(function(req, res) {
     return;
   }
 
+  if (req.method.toLowerCase() == 'options') {
   // show a file upload form
-    res.writeHeader(200, {
-        'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'text/html',
+    res.writeHeader(204, {
         'Access-Control-Allow-Origin': req.headers['origin'],
         'Access-Control-Allow-Method': 'POST',
-        'Access-Control-Allow-Headers': 'x-requested-with, content-range',
+        'Access-Control-Allow-Headers': 'x-requested-with, content-range, a',
     });
+    res.end();
+    return;
+  }
   res.end(
     '<form action="/upload" enctype="multipart/form-data" method="post">'+
     '<input type="text" name="title"><br>'+

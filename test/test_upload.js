@@ -7,7 +7,8 @@ describe('uploader send file', function () {
     this.timeout(5000);
     it('uploader send one file', function (done) {
         var uploader = new Uploader({url: domain});
-        uploader.addFile(getFile([123], 'text/plain'));
+        console.log(getFile([123], 'text/plain'));
+        uploader.addFile(getFile([123], 'text/plain').slice(0, 3));
         assert.equal(uploader.status, Uploader.STATUS.UNSTART);
         uploader.on('complete', (uploader) => {
             const r = uploader.tr.getJson();
