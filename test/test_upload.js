@@ -12,7 +12,7 @@ describe('uploader send file', function () {
         assert.equal(uploader.status, Uploader.STATUS.UNSTART);
         uploader.on('complete', (uploader) => {
             const r = uploader.tr.getJson();
-            if (r.files.size === 3) {
+            if (r['file[]'].size === 3) {
                 done();
             } else {
                 done('file size error');

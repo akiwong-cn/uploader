@@ -25,9 +25,9 @@ describe('chunk uploader send file', function () {
             count++;
             var r = uploader.tr.getJson();
             if (count != splice) {
-                assert.equal(r.files.size, chunkSize);
+                assert.equal(r['file[]'].size, chunkSize);
             } else {
-                assert.equal(r.files.size, 48 * 1024, 'last chunk error');
+                assert.equal(r['file[]'].size, 48 * 1024, 'last chunk error');
             }
         });
         uploader.on('error', () => done('transport error'));

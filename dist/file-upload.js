@@ -4,8 +4,6 @@
   (factory((global.FileUploader = global.FileUploader || {})));
 }(this, (function (exports) { 'use strict';
 
-function noop() {}
-
 function merge(target) {
   for (var _len = arguments.length, list = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
     list[_key - 1] = arguments[_key];
@@ -414,18 +412,21 @@ var Transport = function (_EventEmitter) {
     xhr.upload.onprogress = function (e) {
       _this2.emit('progress', e);
     };
+    this.xhr.onerror = function (e) {
+      _this2.callback('error', e);
+    };
+    this.xhr.onabort = function (e) {
+      _this2.callback('abort', e);
+    };
     xhr.onreadystatechange = function (e) {
       if (xhr.readyState !== 4) {
         return;
       }
 
-      xhr.upload.onprogress = noop;
-      xhr.onreadystatechange = noop;
-
       if (xhr.status >= 200 && xhr.status < 300) {
-        _this2.emit('complete', xhr);
+        _this2.callback('complete', e);
       } else {
-        _this2.emit('error', xhr);
+        _this2.callback('error', e);
       }
     };
     xhr.send(form);
@@ -512,8 +513,14 @@ var Transport = function (_EventEmitter) {
   };
 
   Transport.prototype.abort = function abort() {
+    this.xhr.onreadystatechange = null;
     this.xhr.abort();
-    this.emit('abort', this.xhr);
+  };
+
+  Transport.prototype.callback = function callback(type, e) {
+    var x = this.xhr;
+    x.onreadystatechange = x.upload.onerror = x.onprogress = x.onabort = null;
+    this.emit(type, e);
   };
 
   Transport.prototype.getResponse = function getResponse() {

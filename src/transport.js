@@ -25,18 +25,21 @@ export default class Transport extends EventEmitter {
     xhr.upload.onprogress = e => {
       this.emit('progress', e);
     };
+    this.xhr.onerror = e => {
+      this.callback('error', e);
+    };
+    this.xhr.onabort = e => {
+      this.callback('abort', e);
+    };
     xhr.onreadystatechange = e => {
       if (xhr.readyState !== 4 ) {
         return;
       }
 
-      xhr.upload.onprogress = noop;
-      xhr.onreadystatechange = noop;
-
       if (xhr.status >= 200 && xhr.status < 300 ) {
-        this.emit('complete', xhr);
+        this.callback('complete', e);
       } else {
-        this.emit('error', xhr);
+        this.callback('error', e);
       }
     };
     xhr.send(form);
@@ -115,8 +118,13 @@ export default class Transport extends EventEmitter {
   }
 
   abort () {
+    this.xhr.onreadystatechange = null;
     this.xhr.abort();
-    this.emit('abort', this.xhr);
+  }
+  callback(type, e) {
+    let x = this.xhr;
+    x.onreadystatechange = x.upload.onerror = x.onprogress = x.onabort = null;
+    this.emit(type, e);
   }
   getResponse () {
     return this.xhr.response;
